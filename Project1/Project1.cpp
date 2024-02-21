@@ -5,6 +5,11 @@
 using namespace std;
 
 int main(int argc, char** argv) {
+	//If there isn't enough arguments break out
+	if (argc < 3) {
+		cout << "Please make sure to include both an input file and an output file in the format \"outFile inFile\"" << endl;
+		return -1;
+	}
     int pipeID, filePipe[2], bufferSizePipe[2];
     char* bufferSizeDynamic;
 
@@ -12,23 +17,34 @@ int main(int argc, char** argv) {
     pipe(bufferSizePipe);
     pipeID = fork();
     if (pipeID == 0) {
-        //open the file
-        ifstream inputFile(argv[1], fstream::binary);
-        //find the length of the file for the buffer
-        inputFile.seekg(0, inputFile.end);
-        int bufferLength = inputFile.tellg();
-        inputFile.seekg(0, inputFile.beg);
-        //do some janky stuff to get the length into a char*
-        bufferSizeDynamic = to_string(bufferLength).data();
+		try {
+			//open the file
+			ifstream inputFile(argv[1], fstream::binary);
+			
+			//find the length of the file for the buffer
+			inputFile.seekg(0, inputFile.end);
+			int bufferLength = inputFile.tellg();
+			inputFile.seekg(0, inputFile.beg);
+			//do some janky stuff to get the length into a char*
+			bufferSizeDynamic = to_string(bufferLength).data();
 
-        //setup buffer
-        char* buffer = new char[bufferLength];
+			//setup buffer
+			char* buffer = new char[bufferLength];
 
-        //read in the data
-        inputFile.read(buffer, bufferLength);
-        //close file
-        inputFile.close();
-
+			//read in the data
+			inputFile.read(buffer, bufferLength);
+			//close file
+			inputFile.close();
+		}
+        catch (exception e) {
+			//if it doesn't open terminate the program and send a message out
+			cout << "The file: \"" << inFileName << "\" can not be opened or does not exist." << endl;
+			//return -1 due to error that caused the program to completely not work
+			//this program can not function without an input file
+			return -1;
+		}
+        
+		//if the file is invalid it will never reach here as the try/catch will break out
         write(filePipe[1], buffer, bufferLength);
         //writing a second pipe to allow for dynamic sizing of the file's information
         //uses sizeof(int) since there's no good reason for it to be bigger than 2.147bil
