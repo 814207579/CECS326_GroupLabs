@@ -6,7 +6,7 @@ using namespace std;
 
 int main(int argc, char** argv) {
 	//If there isn't enough arguments break out
-	if (argc < 3) {
+	if (argc < 3 || argc > 3) {
 		cout << "Please make sure to include both an input file and an output file in the format \"outFile inFile\"" << endl;
 		return -1;
 	}
